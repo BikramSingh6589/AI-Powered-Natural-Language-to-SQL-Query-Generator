@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import { Download, FileDown, FileText } from 'lucide-react';
 import { ColumnDef } from '@tanstack/react-table';
+import { toast } from 'sonner';
 
 import { useQuery } from '../context/QueryContext';
 import { DataTable } from '../components/ui/DataTable';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Alert } from '../components/ui/Alert';
 
 export const Results: React.FC = () => {
-  const { queryResult, naturalQuery, generatedSql } = useQuery();
+  const { queryResult, naturalQuery, generatedSql, historyId } = useQuery();
 
   const columns = useMemo<ColumnDef<any, any>[]>(() => {
     if (!queryResult) return [];
@@ -22,14 +22,43 @@ export const Results: React.FC = () => {
         if (typeof value === 'number') {
           return new Intl.NumberFormat('en-US').format(value);
         }
-        return value;
+        return value ?? '—';
       }
     }));
   }, [queryResult]);
 
-  const handleExport = (type: 'csv' | 'excel' | 'pdf') => {
-    // Implement actual export logic here
-    console.log(`Exporting as ${type}`);
+  const handleExport = async (type: 'csv' | 'excel' | 'pdf') => {
+    if (!historyId) {
+      toast.error('No query to export');
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || '/api/v1'}/export/${type}/${historyId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const ext = type === 'excel' ? 'xlsx' : type;
+      a.download = `query_results.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success(`Exported as ${type.toUpperCase()}`);
+    } catch (error: any) {
+      toast.error('Failed to export results');
+    }
   };
 
   if (!queryResult) {
@@ -78,6 +107,15 @@ export const Results: React.FC = () => {
             <div className="text-sm font-medium text-text-secondary mb-1">Execution Time</div>
             <div className="text-3xl font-bold text-text-primary">
               {queryResult.executionTimeMs} <span className="text-base font-normal text-text-secondary">ms</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-sm font-medium text-text-secondary mb-1">Columns</div>
+            <div className="text-3xl font-bold text-text-primary">
+              {queryResult.columns.length}
             </div>
           </CardContent>
         </Card>

@@ -1,68 +1,71 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye, Copy, Trash2, Clock, Calendar } from 'lucide-react';
+import { Eye, Copy, Trash2, Clock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { DataTable } from '../components/ui/DataTable';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { api } from '../services/api';
 
 type HistoryItem = {
   id: string;
-  date: string;
+  createdAt: string;
   naturalQuery: string;
-  sqlQuery: string;
-  status: 'Success' | 'Failed';
-  executionTime: string;
+  generatedSQL: string;
+  status: 'SUCCESS' | 'ERROR';
+  executionTimeMs: number | null;
 };
 
 export const QueryHistory: React.FC = () => {
-  // Mock Data
-  const data: HistoryItem[] = [
-    {
-      id: '1',
-      date: '2026-06-20 09:30 AM',
-      naturalQuery: 'Show me the top 5 customers by revenue this year',
-      sqlQuery: 'SELECT customer_name, SUM(revenue) FROM sales_2026 GROUP BY customer_name ORDER BY SUM(revenue) DESC LIMIT 5;',
-      status: 'Success',
-      executionTime: '42ms'
-    },
-    {
-      id: '2',
-      date: '2026-06-19 02:15 PM',
-      naturalQuery: 'Total sales grouped by region',
-      sqlQuery: 'SELECT region, COUNT(*) FROM sales GROUP BY region;',
-      status: 'Success',
-      executionTime: '12ms'
-    },
-    {
-      id: '3',
-      date: '2026-06-18 11:05 AM',
-      naturalQuery: 'Get all active employees',
-      sqlQuery: 'SELECT * FROM employees WHERE status = active;',
-      status: 'Failed',
-      executionTime: '0ms'
-    }
-  ];
+  const [data, setData] = useState<HistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await api.get('/history');
+        setData(response.data.data.history || []);
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Failed to load query history');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchHistory();
+  }, []);
 
   const handleCopy = (sql: string) => {
     navigator.clipboard.writeText(sql);
     toast.success('SQL copied to clipboard');
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      await api.delete(`/history/${id}`);
+      setData(prev => prev.filter(item => item.id !== id));
+      toast.success('History entry deleted');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete history entry');
+    }
+  };
+
   const columns = useMemo<ColumnDef<HistoryItem, any>[]>(() => [
     {
-      accessorKey: 'date',
+      accessorKey: 'createdAt',
       header: 'Date',
-      cell: info => (
-        <div className="flex flex-col gap-1">
-          <span className="font-medium">{info.getValue().split(' ')[0]}</span>
-          <span className="text-xs text-text-secondary flex items-center gap-1">
-            <Clock className="w-3 h-3" /> {info.getValue().split(' ')[1]} {info.getValue().split(' ')[2]}
-          </span>
-        </div>
-      )
+      cell: info => {
+        const date = new Date(info.getValue());
+        return (
+          <div className="flex flex-col gap-1">
+            <span className="font-medium">{date.toLocaleDateString()}</span>
+            <span className="text-xs text-text-secondary flex items-center gap-1">
+              <Clock className="w-3 h-3" /> {date.toLocaleTimeString()}
+            </span>
+          </div>
+        );
+      }
     },
     {
       accessorKey: 'naturalQuery',
@@ -74,7 +77,7 @@ export const QueryHistory: React.FC = () => {
       )
     },
     {
-      accessorKey: 'sqlQuery',
+      accessorKey: 'generatedSQL',
       header: 'Generated SQL',
       cell: info => (
         <div className="max-w-[300px] truncate font-mono text-xs text-text-secondary bg-background px-2 py-1 rounded" title={info.getValue()}>
@@ -86,9 +89,18 @@ export const QueryHistory: React.FC = () => {
       accessorKey: 'status',
       header: 'Status',
       cell: info => (
-        <Badge variant={info.getValue() === 'Success' ? 'success' : 'destructive'}>
-          {info.getValue()}
+        <Badge variant={info.getValue() === 'SUCCESS' ? 'success' : 'destructive'}>
+          {info.getValue() === 'SUCCESS' ? 'Success' : 'Failed'}
         </Badge>
+      )
+    },
+    {
+      accessorKey: 'executionTimeMs',
+      header: 'Time',
+      cell: info => (
+        <span className="text-sm text-text-secondary">
+          {info.getValue() != null ? `${info.getValue()}ms` : '—'}
+        </span>
       )
     },
     {
@@ -96,13 +108,10 @@ export const QueryHistory: React.FC = () => {
       header: 'Actions',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-text-secondary hover:text-primary">
-            <Eye className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-text-secondary hover:text-primary" onClick={() => handleCopy(row.original.sqlQuery)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-text-secondary hover:text-primary" onClick={() => handleCopy(row.original.generatedSQL)}>
             <Copy className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-text-secondary hover:text-error">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-text-secondary hover:text-error" onClick={() => handleDelete(row.original.id)}>
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -119,12 +128,18 @@ export const QueryHistory: React.FC = () => {
 
       <Card>
         <CardContent className="p-0">
-          <DataTable 
-            columns={columns} 
-            data={data} 
-            searchKey="naturalQuery"
-            searchPlaceholder="Search questions..."
-          />
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <DataTable 
+              columns={columns} 
+              data={data} 
+              searchKey="naturalQuery"
+              searchPlaceholder="Search questions..."
+            />
+          )}
         </CardContent>
       </Card>
     </div>

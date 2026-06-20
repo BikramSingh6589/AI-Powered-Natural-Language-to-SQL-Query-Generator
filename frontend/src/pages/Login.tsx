@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { api } from '../services/api';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -35,13 +36,13 @@ export const Login: React.FC = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 900));
-      const mockUser = { id: '1', name: data.email.split('@')[0], email: data.email, provider: 'email' as const };
-      login(mockUser, 'mock_jwt_token_' + Date.now());
+      const response = await api.post('/auth/login', { email: data.email, password: data.password });
+      const { user, tokens } = response.data.data;
+      login(user, tokens.accessToken);
       toast.success('Welcome back!');
       navigate(from, { replace: true });
-    } catch {
-      toast.error('Invalid email or password');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Invalid email or password');
     }
   };
 
@@ -49,25 +50,14 @@ export const Login: React.FC = () => {
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        // Fetch user info from Google using the access token
-        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        const profile = await res.json();
-
-        const googleUser = {
-          id: profile.sub || 'google_user',
-          name: profile.name || 'Google User',
-          email: profile.email || '',
-          picture: profile.picture || '',
-          provider: 'google' as const,
-        };
-
-        login(googleUser, tokenResponse.access_token);
-        toast.success(`Welcome, ${googleUser.name}! 🎉`);
+        const response = await api.post('/auth/google', { token: tokenResponse.access_token });
+        const { user, tokens } = response.data.data;
+        
+        login(user, tokens.accessToken);
+        toast.success(`Welcome, ${user.name}! 🎉`);
         navigate(from, { replace: true });
-      } catch {
-        toast.error('Failed to fetch Google profile');
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Failed to authenticate with Google');
       }
     },
     onError: () => {

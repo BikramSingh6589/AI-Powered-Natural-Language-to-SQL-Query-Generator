@@ -7,11 +7,13 @@ import { Button } from '../components/ui/Button';
 import { Alert } from '../components/ui/Alert';
 import { useDataset } from '../context/DatasetContext';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
 
 export const CSVUpload: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setDataset } = useDataset();
   const navigate = useNavigate();
@@ -59,35 +61,39 @@ export const CSVUpload: React.FC = () => {
     if (!file) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('name', file.name.replace('.csv', ''));
+
     try {
-      // Mock API call to upload and parse CSV
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await api.post('/csv/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent: any) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 100));
+          setUploadProgress(percentCompleted);
+        },
+      });
       
-      const mockDataset = {
-        id: 'dataset_' + Date.now(),
-        name: file.name,
-        rowCount: 15420,
-        columns: [
-          { name: 'id', type: 'integer' },
-          { name: 'customer_name', type: 'string' },
-          { name: 'email', type: 'string' },
-          { name: 'revenue', type: 'numeric' },
-          { name: 'created_at', type: 'date' },
-        ],
-        previewData: [
-          { id: 1, customer_name: 'Acme Corp', email: 'contact@acme.com', revenue: 5000, created_at: '2026-01-15' },
-          { id: 2, customer_name: 'Globex', email: 'info@globex.com', revenue: 3500, created_at: '2026-01-16' },
-        ]
+      const newDataset = {
+        id: response.data.data.dataset.id,
+        name: response.data.data.dataset.name,
+        rowCount: response.data.data.dataset.rowCount,
+        columns: response.data.data.dataset.columns.map((col: string) => ({ name: col, type: 'string' })),
       };
       
-      setDataset(mockDataset);
+      setDataset(newDataset);
       toast.success('Dataset uploaded successfully!');
       navigate('/query');
       
-    } catch (error) {
-      toast.error('Failed to upload dataset');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to upload dataset');
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -142,6 +148,12 @@ export const CSVUpload: React.FC = () => {
                   <X className="w-5 h-5" />
                 </Button>
               </div>
+
+              {isUploading && (
+                <div className="w-full bg-border rounded-full h-2.5">
+                  <div className="bg-primary h-2.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                </div>
+              )}
 
               <Alert variant="info" title="Ready to analyze">
                 Your file is ready to be processed. We will automatically detect columns and data types.

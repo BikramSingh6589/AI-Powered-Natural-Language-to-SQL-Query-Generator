@@ -4,6 +4,7 @@ export interface QueryResult {
   columns: string[];
   rows: any[];
   executionTimeMs: number;
+  historyId?: string;
 }
 
 interface QueryContextType {
@@ -16,6 +17,8 @@ interface QueryContextType {
   queryResult: QueryResult | null;
   setQueryResult: (res: QueryResult | null) => void;
   clearQuery: () => void;
+  historyId: string | null;
+  setHistoryId: (id: string | null) => void;
 }
 
 const QueryContext = createContext<QueryContextType | undefined>(undefined);
@@ -25,12 +28,14 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [generatedSql, setGeneratedSql] = useState('');
   const [explanation, setExplanation] = useState('');
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
+  const [historyId, setHistoryId] = useState<string | null>(null);
 
   const clearQuery = () => {
     setNaturalQuery('');
     setGeneratedSql('');
     setExplanation('');
     setQueryResult(null);
+    setHistoryId(null);
   };
 
   return (
@@ -39,7 +44,8 @@ export const QueryProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       generatedSql, setGeneratedSql,
       explanation, setExplanation,
       queryResult, setQueryResult,
-      clearQuery
+      clearQuery,
+      historyId, setHistoryId
     }}>
       {children}
     </QueryContext.Provider>

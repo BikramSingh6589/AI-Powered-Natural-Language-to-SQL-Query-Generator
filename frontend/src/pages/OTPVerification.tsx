@@ -9,6 +9,7 @@ import { KeyRound } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { api } from '../services/api';
 
 const otpSchema = z.object({
   otp: z.string().length(6, 'OTP must be exactly 6 digits').regex(/^\d+$/, 'OTP must contain only numbers'),
@@ -38,13 +39,11 @@ export const OTPVerification: React.FC = () => {
 
   const onSubmit = async (data: OTPFormValues) => {
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await api.post('/auth/verify-otp', { email, otp: data.otp });
       toast.success('Email verified successfully! You can now log in.');
       navigate('/login');
-    } catch (error) {
-      toast.error('Invalid or expired OTP. Please try again.');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Invalid or expired OTP. Please try again.');
     }
   };
 

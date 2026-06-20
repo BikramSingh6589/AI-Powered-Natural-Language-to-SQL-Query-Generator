@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Play, Sparkles, Copy, Check, FileCode2, History, MessageSquare, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Sparkles, Copy, Check, FileCode2, History, MessageSquare, Loader2, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,13 +7,35 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/Button';
 import { Textarea } from '../components/ui/Textarea';
 import { useQuery } from '../context/QueryContext';
+import { useDataset, Dataset } from '../context/DatasetContext';
+import { api } from '../services/api';
 
 export const QueryGenerator: React.FC = () => {
-  const { naturalQuery, setNaturalQuery, generatedSql, setGeneratedSql, explanation, setExplanation, setQueryResult } = useQuery();
+  const { naturalQuery, setNaturalQuery, generatedSql, setGeneratedSql, explanation, setExplanation, setQueryResult, historyId, setHistoryId } = useQuery();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { dataset, setSelectedDataset, datasets, addDataset } = useDataset();
+  const [availableDatasets, setAvailableDatasets] = useState<Dataset[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchDatasets = async () => {
+      try {
+        const response = await api.get('/csv/datasets');
+        const fetchedDatasets = response.data.data.datasets;
+        setAvailableDatasets(fetchedDatasets);
+        
+        // If we have datasets but none selected, select the first one
+        if (fetchedDatasets.length > 0 && !dataset) {
+          setSelectedDataset(fetchedDatasets[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load datasets', error);
+      }
+    };
+    fetchDatasets();
+  }, []);
 
   const handleGenerate = async () => {
     if (!naturalQuery.trim()) {
@@ -21,48 +43,48 @@ export const QueryGenerator: React.FC = () => {
       return;
     }
 
+    if (!dataset?.id) {
+      toast.error('Please select a dataset first');
+      return;
+    }
+
     setIsGenerating(true);
     try {
-      // Mock API Call to LLM
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await api.post('/query/generate', {
+        datasetId: dataset.id,
+        naturalQuery
+      });
       
-      const mockSql = `SELECT\n  customer_name,\n  SUM(revenue) AS total_revenue\nFROM\n  sales_2026\nWHERE\n  created_at >= '2026-01-01'\nGROUP BY\n  customer_name\nORDER BY\n  total_revenue DESC\nLIMIT 5;`;
-      const mockExplanation = "This query calculates the total revenue per customer by summing up the 'revenue' column from the 'sales_2026' table for all records created on or after January 1st, 2026. It then groups the results by customer name and orders them in descending order to show the top 5 customers with the highest revenue.";
+      const { sql, explanation, historyId: newHistoryId } = response.data.data;
       
-      setGeneratedSql(mockSql);
-      setExplanation(mockExplanation);
+      setGeneratedSql(sql);
+      setExplanation(explanation);
+      setHistoryId(newHistoryId);
       toast.success('SQL Query generated successfully');
-    } catch (error) {
-      toast.error('Failed to generate query');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to generate query');
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleExecute = async () => {
-    if (!generatedSql) return;
+    if (!generatedSql || !historyId) return;
 
     setIsExecuting(true);
     try {
-      // Mock API call to execute query
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await api.post('/query/execute', { historyId });
       
       setQueryResult({
-        columns: ['customer_name', 'total_revenue'],
-        rows: [
-          { customer_name: 'Acme Corp', total_revenue: 125000 },
-          { customer_name: 'Globex', total_revenue: 98000 },
-          { customer_name: 'Initech', total_revenue: 85000 },
-          { customer_name: 'Umbrella Corp', total_revenue: 72000 },
-          { customer_name: 'Soylent', total_revenue: 65000 },
-        ],
-        executionTimeMs: 42
+        columns: response.data.data.fields,
+        rows: response.data.data.rows,
+        executionTimeMs: response.data.data.executionTimeMs
       });
       
       toast.success('Query executed successfully');
       navigate('/results');
-    } catch (error) {
-      toast.error('Query execution failed');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Query execution failed');
     } finally {
       setIsExecuting(false);
     }
@@ -77,9 +99,28 @@ export const QueryGenerator: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col gap-6 max-w-5xl mx-auto">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-text-primary">Query Generator</h2>
-        <p className="text-text-secondary mt-1">Translate your natural language questions into executable SQL queries.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-text-primary">Query Generator</h2>
+          <p className="text-text-secondary mt-1">Translate your natural language questions into executable SQL queries.</p>
+        </div>
+        
+        <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2 shadow-sm">
+          <Database className="w-4 h-4 text-secondary" />
+          <select 
+            value={dataset?.id || ''} 
+            onChange={(e) => {
+              const selected = availableDatasets.find(d => d.id === e.target.value);
+              if (selected) setSelectedDataset(selected);
+            }}
+            className="bg-transparent border-none text-sm font-medium text-text-primary focus:outline-none focus:ring-0 cursor-pointer min-w-[150px]"
+          >
+            <option value="" disabled>Select Dataset</option>
+            {availableDatasets.map(d => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Input Section */}

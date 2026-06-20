@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { api } from '../services/api';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -38,33 +39,25 @@ export const Register: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 900));
+      await api.post('/auth/register', { name: data.name, email: data.email, password: data.password });
       toast.success('Account created! Please verify your OTP.');
       navigate('/verify-otp', { state: { email: data.email } });
-    } catch {
-      toast.error('Registration failed. Please try again.');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
     }
   };
 
   const handleGoogleSignup = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        const profile = await res.json();
-        const googleUser = {
-          id: profile.sub || 'google_user',
-          name: profile.name || 'Google User',
-          email: profile.email || '',
-          picture: profile.picture || '',
-          provider: 'google' as const,
-        };
-        login(googleUser, tokenResponse.access_token);
-        toast.success(`Account created! Welcome, ${googleUser.name}! 🎉`);
+        const response = await api.post('/auth/google', { token: tokenResponse.access_token });
+        const { user, tokens } = response.data.data;
+        
+        login(user, tokens.accessToken);
+        toast.success(`Account created! Welcome, ${user.name}! 🎉`);
         navigate('/dashboard', { replace: true });
-      } catch {
-        toast.error('Failed to fetch Google profile');
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Failed to authenticate with Google');
       }
     },
     onError: () => toast.error('Google sign-up was cancelled or failed.'),
