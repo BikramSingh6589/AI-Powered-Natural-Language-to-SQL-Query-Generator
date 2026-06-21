@@ -25,7 +25,7 @@ export const QueryHistory: React.FC = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await api.get('/history');
+        const response = await api.get('/query/history');
         setData(response.data.data.history || []);
       } catch (error: any) {
         toast.error(error.response?.data?.message || 'Failed to load query history');
@@ -43,7 +43,7 @@ export const QueryHistory: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await api.delete(`/history/${id}`);
+      await api.delete(`/query/history/${id}`);
       setData(prev => prev.filter(item => item.id !== id));
       toast.success('History entry deleted');
     } catch (error: any) {
@@ -108,10 +108,10 @@ export const QueryHistory: React.FC = () => {
       header: 'Actions',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-text-secondary hover:text-primary" onClick={() => handleCopy(row.original.generatedSQL)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-text-secondary hover:text-primary hover:bg-primary/10 transition-colors" onClick={() => handleCopy(row.original.generatedSQL)}>
             <Copy className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-text-secondary hover:text-error" onClick={() => handleDelete(row.original.id)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-text-secondary hover:text-error hover:bg-error/10 transition-colors" onClick={() => handleDelete(row.original.id)}>
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -126,7 +126,7 @@ export const QueryHistory: React.FC = () => {
         <p className="text-text-secondary mt-1">View, reuse, or manage your previously generated queries.</p>
       </div>
 
-      <Card>
+      <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">

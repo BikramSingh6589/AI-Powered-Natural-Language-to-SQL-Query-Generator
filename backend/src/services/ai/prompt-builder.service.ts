@@ -11,9 +11,9 @@ Schema Information for table "${tableName}":
 ${schemaDescription}
 
 IMPORTANT RULES:
-1. Ensure the query strictly matches the provided schema columns.
-2. Use standard PostgreSQL functions and syntax.
-3. If the query cannot be generated or doesn't make sense for the schema, generate a safe fallback query like: SELECT 1 AS error_invalid_query;
+1. Map the user's terms to the closest matching schema columns. Be lenient. If they ask for "region", use "region_id" if that's the closest column.
+2. Use standard PostgreSQL functions and syntax. For "top N", use "ORDER BY ... LIMIT N".
+3. ONLY if the query is completely unrelated to the schema and impossible to answer, generate a safe fallback query like: SELECT 1 AS error_invalid_query;
 `;
 
   return { systemPrompt, userPrompt: naturalQuery };

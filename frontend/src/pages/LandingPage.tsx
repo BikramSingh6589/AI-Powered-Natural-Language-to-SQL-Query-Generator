@@ -89,54 +89,58 @@ export const LandingPage: React.FC = () => {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="pt-28 pb-20 px-6">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      <section className="pt-32 pb-28 px-6 relative overflow-hidden">
+        
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-8"
+            className="space-y-10"
           >
             <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border"
-              style={{ backgroundColor: 'rgba(79,70,229,0.1)', borderColor: 'rgba(79,70,229,0.3)', color: '#4F46E5' }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border shadow-sm"
+              style={{ backgroundColor: 'rgba(79,70,229,0.05)', borderColor: 'rgba(79,70,229,0.2)', color: '#4F46E5' }}
             >
-              <Zap className="w-3 h-3" /> AI-Powered · Natural Language to SQL
+              <Zap className="w-3.5 h-3.5" /> AI-Powered · Natural Language to SQL
             </div>
 
             <h1
-              className="text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight"
+              className="text-5xl lg:text-[4.25rem] font-extrabold leading-[1.05] tracking-tighter"
               style={{ color: 'var(--text-primary)' }}
             >
               Convert English Into{' '}
-              <span style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                SQL
+              <span className="relative inline-block">
+                <span className="relative z-10" style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  SQL
+                </span>
+                <span className="absolute bottom-0 left-0 w-full h-3 bg-primary/20 -z-10 rounded-sm blur-[2px]" />
               </span>{' '}
               Instantly
             </h1>
 
-            <p className="text-lg leading-relaxed max-w-xl" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-xl leading-relaxed max-w-xl font-medium opacity-80" style={{ color: 'var(--text-secondary)' }}>
               Stop struggling with complex queries. Our AI-powered platform translates your natural language questions into highly optimized SQL queries in seconds.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-5 pt-2">
               {isAuthenticated ? (
                 <>
-                  <Button size="lg" onClick={() => navigate('/query')} className="gap-2">
+                  <Button size="lg" onClick={() => navigate('/query')} className="gap-2 shadow-lg shadow-primary/25 hover:-translate-y-0.5 transition-transform">
                     Open Query Generator <ArrowRight className="w-4 h-4" />
                   </Button>
-                  <Button variant="secondary" size="lg" onClick={() => navigate('/dashboard')} className="gap-2">
+                  <Button variant="secondary" size="lg" onClick={() => navigate('/dashboard')} className="gap-2 hover:-translate-y-0.5 transition-transform border border-border/50">
                     <LayoutDashboard className="w-4 h-4" /> View Dashboard
                   </Button>
                 </>
               ) : (
                 <>
                   <Link to="/register">
-                    <Button size="lg" className="gap-2">
+                    <Button size="lg" className="gap-2 shadow-lg shadow-primary/25 hover:-translate-y-0.5 transition-transform h-12 px-8">
                       Get Started Free <ArrowRight className="w-4 h-4" />
                     </Button>
                   </Link>
-                  <Button variant="secondary" size="lg" onClick={() => navigate('/dashboard')}>
+                  <Button variant="secondary" size="lg" onClick={() => navigate('/dashboard')} className="hover:-translate-y-0.5 transition-transform h-12 px-8 border border-border/50 bg-transparent hover:bg-muted/50">
                     View Demo
                   </Button>
                 </>
@@ -205,7 +209,7 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {[
               { title: 'CSV Upload', desc: 'Instantly generate a database schema from your CSV files and start querying.', icon: FileSpreadsheet, color: '#4F46E5' },
               { title: 'AI SQL Generation', desc: 'State-of-the-art LLMs trained to write complex, highly optimized SQL.', icon: Zap, color: '#F59E0B' },
@@ -220,17 +224,17 @@ export const LandingPage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.07 }}
-                className="p-6 rounded-2xl border hover:card-shadow-hover transition-shadow group cursor-default"
-                style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)' }}
+                className="p-8 rounded-3xl border border-border/50 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group cursor-pointer h-full flex flex-col"
+                style={{ backgroundColor: 'var(--bg)' }}
               >
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
                   style={{ backgroundColor: `${feature.color}18` }}
                 >
-                  <feature.icon className="w-5 h-5" style={{ color: feature.color }} />
+                  <feature.icon className="w-6 h-6" style={{ color: feature.color }} />
                 </div>
-                <h3 className="text-base font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>{feature.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{feature.desc}</p>
+                <h3 className="text-xl font-bold mb-3 tracking-tight" style={{ color: 'var(--text-primary)' }}>{feature.title}</h3>
+                <p className="text-base leading-relaxed opacity-80 flex-1" style={{ color: 'var(--text-secondary)' }}>{feature.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -238,13 +242,52 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="py-10 px-6 border-t" style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)' }}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 font-bold text-lg text-primary">
-            <Database className="w-5 h-5" />
-            SQL Analyzer
+      <footer className="pt-20 pb-10 border-t bg-muted/20" style={{ borderColor: 'var(--border)' }}>
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
+          <div className="col-span-1 md:col-span-2 space-y-6">
+            <div className="flex items-center gap-2.5 font-bold text-xl text-primary">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <Database className="w-4 h-4 text-white" />
+              </div>
+              SQL Analyzer
+            </div>
+            <p className="max-w-sm text-sm leading-relaxed opacity-80" style={{ color: 'var(--text-secondary)' }}>
+              Securing Your Digital World: Your Trusted Partner in Data Protection with Cutting Edge Solutions for Data Security.
+            </p>
           </div>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>© 2026 SQL Analyzer. All rights reserved.</p>
+          
+          <div className="space-y-6">
+            <h4 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Resources</h4>
+            <ul className="space-y-4 text-sm opacity-80" style={{ color: 'var(--text-secondary)' }}>
+              <li><Link to="/" className="hover:text-primary transition-colors">Features</Link></li>
+              <li><Link to="/" className="hover:text-primary transition-colors">Pricing</Link></li>
+              <li><Link to="/" className="hover:text-primary transition-colors">Blog</Link></li>
+            </ul>
+          </div>
+          
+          <div className="space-y-6">
+            <h4 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Subscribe to Our Newsletter!</h4>
+            <p className="text-sm opacity-80 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              Stay Informed with Our Latest Security Insights - Subscribe to Our Newsletter!
+            </p>
+            <div className="flex gap-2">
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                className="flex-1 px-4 py-2.5 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                style={{ borderColor: 'var(--border)' }}
+              />
+              <Button className="rounded-xl px-5 whitespace-nowrap shadow-sm shadow-primary/20">Subscribe</Button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-6 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-sm opacity-60" style={{ color: 'var(--text-secondary)' }}>© 2026 SQL Analyzer. All rights reserved.</p>
+          <div className="flex gap-6 text-sm opacity-80" style={{ color: 'var(--text-secondary)' }}>
+            <Link to="/" className="hover:text-primary transition-colors">Terms</Link>
+            <Link to="/" className="hover:text-primary transition-colors">Privacy Policy</Link>
+          </div>
         </div>
       </footer>
     </div>

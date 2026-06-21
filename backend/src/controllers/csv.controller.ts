@@ -16,10 +16,16 @@ export const uploadCsv = async (req: AuthRequest, res: Response, next: NextFunct
       throw new AppError('Unauthorized', 401);
     }
 
-    const { originalname, path: filePath } = req.file;
+    // When using CloudinaryStorage, req.file.path contains the secure Cloudinary URL
+    const filePath = (req.file as any).path || (req.file as any).secure_url;
+    const { originalname } = req.file;
     const name = req.body.name || originalname.split('.')[0];
     
-    // Parse CSV and extract schema
+    if (!filePath) {
+      throw new AppError('File upload to Cloudinary failed', 500);
+    }
+
+    // Parse CSV from the Cloudinary URL
     const { headers, types, records } = await parseCSVAndExtractSchema(filePath);
 
     if (headers.length === 0 || records.length === 0) {
@@ -37,12 +43,12 @@ export const uploadCsv = async (req: AuthRequest, res: Response, next: NextFunct
     // Insert records
     await insertDataIntoTable(tableName, headers, records);
 
-    // Save Dataset metadata
+    // Save Dataset metadata (filePath is now the Cloudinary URL)
     const dataset = await prisma.dataset.create({
       data: {
         userId: req.user.id,
         name,
-        filePath,
+        filePath,   // Cloudinary secure URL
         tableName,
         schemaInfo: types,
       },

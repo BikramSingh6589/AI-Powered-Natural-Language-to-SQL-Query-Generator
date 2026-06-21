@@ -64,8 +64,8 @@ export const CSVUpload: React.FC = () => {
     setUploadProgress(0);
 
     const formData = new FormData();
-    formData.append('file', file);
     formData.append('name', file.name.replace('.csv', ''));
+    formData.append('file', file);
 
     try {
       const response = await api.post('/csv/upload', formData, {
@@ -104,22 +104,26 @@ export const CSVUpload: React.FC = () => {
         <p className="text-text-secondary mt-1">Upload a CSV file to automatically generate a database schema and start querying.</p>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="border-border/60 shadow-xl overflow-hidden bg-gradient-to-b from-card to-background">
+        <CardContent className="p-8">
           {!file ? (
             <div
-              className={`border-2 border-dashed rounded-[16px] flex flex-col items-center justify-center h-[280px] transition-colors ${
-                isDragging ? 'border-primary bg-primary/5' : 'border-border hover:bg-background'
+              className={`border-2 border-dashed rounded-3xl flex flex-col items-center justify-center min-h-[340px] transition-all duration-300 relative group ${
+                isDragging 
+                  ? 'border-primary bg-primary/10 shadow-[inset_0_0_50px_rgba(var(--primary-rgb),0.1)]' 
+                  : 'border-border/80 hover:border-primary/50 hover:bg-muted/30 cursor-pointer'
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
             >
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <UploadCloud className="w-8 h-8 text-primary" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl pointer-events-none" />
+              <div className="w-20 h-20 rounded-3xl bg-card shadow-sm flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform duration-300 border border-border/50 relative z-10">
+                <UploadCloud className="w-10 h-10 group-hover:animate-bounce-slow" />
               </div>
-              <h3 className="text-lg font-medium text-text-primary mb-1">Drag & drop your CSV file here</h3>
-              <p className="text-sm text-text-secondary mb-6">or click to browse from your computer (max 10MB)</p>
+              <h3 className="text-2xl font-bold text-text-primary mb-3 relative z-10">Upload your CSV</h3>
+              <p className="text-sm font-medium text-text-secondary mb-10 relative z-10">Drag and drop or click to browse (max 10MB)</p>
               
               <input 
                 type="file" 
@@ -128,20 +132,23 @@ export const CSVUpload: React.FC = () => {
                 accept=".csv" 
                 className="hidden" 
               />
-              <Button onClick={() => fileInputRef.current?.click()}>
+              <Button 
+                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                className="rounded-xl px-10 py-6 text-base shadow-lg shadow-primary/20 relative z-10 hover:-translate-y-0.5 transition-transform"
+              >
                 Select File
               </Button>
             </div>
           ) : (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between p-4 rounded-[12px] border border-border bg-background">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                    <FileSpreadsheet className="w-5 h-5 text-secondary" />
+            <div className="space-y-6 max-w-2xl mx-auto">
+              <div className="flex items-center justify-between p-5 rounded-2xl border border-border/50 bg-card shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <FileSpreadsheet className="w-7 h-7 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-text-primary">{file.name}</h4>
-                    <p className="text-sm text-text-secondary">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <h4 className="text-base font-bold text-text-primary mb-1">{file.name}</h4>
+                    <p className="text-xs font-medium text-text-secondary tracking-wide">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                   </div>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setFile(null)} disabled={isUploading}>
@@ -159,11 +166,11 @@ export const CSVUpload: React.FC = () => {
                 Your file is ready to be processed. We will automatically detect columns and data types.
               </Alert>
 
-              <div className="flex justify-end gap-3">
-                <Button variant="secondary" onClick={() => setFile(null)} disabled={isUploading}>
+              <div className="flex justify-end gap-3 pt-2">
+                <Button variant="secondary" onClick={() => setFile(null)} disabled={isUploading} className="rounded-xl px-6 border-border/50">
                   Cancel
                 </Button>
-                <Button onClick={handleUpload} isLoading={isUploading}>
+                <Button onClick={handleUpload} isLoading={isUploading} className="rounded-xl px-6 shadow-md shadow-primary/20">
                   Upload & Process
                 </Button>
               </div>

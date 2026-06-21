@@ -22,7 +22,7 @@ createRoot(document.getElementById('root')!).render(
             <DatasetProvider>
               <QueryProvider>
                 <App />
-                <Toaster richColors position="top-right" />
+                <Toaster richColors position="top-center" />
               </QueryProvider>
             </DatasetProvider>
           </AuthProvider>

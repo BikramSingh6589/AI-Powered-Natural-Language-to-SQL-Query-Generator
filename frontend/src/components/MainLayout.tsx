@@ -102,16 +102,16 @@ export const MainLayout: React.FC = () => {
               to={item.path}
               title={collapsed ? item.name : undefined}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group ${
                   isActive
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)]'
+                    ? 'bg-primary/10 text-primary font-semibold'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)] font-medium'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : ''}`} />
+                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-primary' : ''}`} />
                   <AnimatePresence>
                     {!collapsed && (
                       <motion.span
@@ -138,16 +138,16 @@ export const MainLayout: React.FC = () => {
               to={item.path}
               title={collapsed ? item.name : undefined}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group ${
                   isActive
-                    ? 'bg-primary text-white'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)]'
+                    ? 'bg-primary/10 text-primary font-semibold'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--border)] hover:text-[var(--text-primary)] font-medium'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-white' : ''}`} />
+                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-primary' : ''}`} />
                   <AnimatePresence>
                     {!collapsed && (
                       <motion.span
@@ -200,11 +200,17 @@ export const MainLayout: React.FC = () => {
         >
           <div className="flex items-center gap-3 flex-1 max-w-md">
             <div
-              className="flex items-center gap-2 px-3 py-2 rounded-xl border text-sm flex-1"
+              className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-sm flex-1 cursor-text hover:border-primary/40 transition-colors"
               style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
-              <Search className="w-4 h-4 flex-shrink-0" />
-              <span>Search queries, datasets...</span>
+              <div className="flex items-center gap-2">
+                <Search className="w-4 h-4 flex-shrink-0" />
+                <span>Search queries, datasets...</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-1 opacity-60">
+                <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-border bg-card text-[10px] font-medium font-sans">Ctrl</kbd>
+                <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-border bg-card text-[10px] font-medium font-sans">K</kbd>
+              </div>
             </div>
           </div>
 

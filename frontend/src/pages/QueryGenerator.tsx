@@ -17,7 +17,13 @@ export const QueryGenerator: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const { dataset, setSelectedDataset, datasets, addDataset } = useDataset();
   const [availableDatasets, setAvailableDatasets] = useState<Dataset[]>([]);
+  const [dbConnected, setDbConnected] = useState(false);
+  const [isEditingSql, setIsEditingSql] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setDbConnected(localStorage.getItem('dbConnected') === 'true');
+  }, []);
 
   useEffect(() => {
     const fetchDatasets = async () => {
@@ -99,9 +105,22 @@ export const QueryGenerator: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col gap-6 max-w-5xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-text-primary">Query Generator</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-text-primary flex items-center gap-3">
+            Query Generator
+            {dbConnected ? (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/15 text-success border border-success/20 flex items-center gap-1.5 shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                DB Connected
+              </span>
+            ) : (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/15 text-warning border border-warning/20 flex items-center gap-1.5 shadow-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-warning" />
+                DB Disconnected
+              </span>
+            )}
+          </h2>
           <p className="text-text-secondary mt-1">Translate your natural language questions into executable SQL queries.</p>
         </div>
         
@@ -164,25 +183,49 @@ export const QueryGenerator: React.FC = () => {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0 flex-1 bg-[#0F172A] relative">
-            <pre className="p-6 text-sm font-mono text-[#F8FAFC] overflow-x-auto h-full">
-              {generatedSql}
-            </pre>
+          <CardContent className="p-0 flex-1 bg-card/50 relative group">
+            {isEditingSql ? (
+              <textarea
+                value={generatedSql}
+                onChange={(e) => setGeneratedSql(e.target.value)}
+                className="w-full h-full min-h-[200px] p-6 text-sm font-mono text-text-primary bg-background/50 border-none focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none rounded-b-xl"
+                spellCheck="false"
+              />
+            ) : (
+              <pre className="p-6 text-sm font-mono text-text-primary/90 overflow-x-auto h-full min-h-[200px]">
+                {generatedSql}
+              </pre>
+            )}
             
-            <div className="absolute bottom-4 right-4 flex gap-3">
-              <Button 
-                variant="secondary" 
-                className="bg-card text-text-primary hover:bg-card/90"
-              >
-                Edit SQL
-              </Button>
+            <div className="absolute bottom-4 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              {isEditingSql ? (
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setIsEditingSql(false)}
+                  className="bg-card text-text-primary hover:bg-card/90 shadow-sm border border-border/50"
+                  size="sm"
+                >
+                  <Check className="w-4 h-4 mr-1.5 text-success" />
+                  Save Changes
+                </Button>
+              ) : (
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setIsEditingSql(true)}
+                  className="bg-card text-text-primary hover:bg-card/90 shadow-sm border border-border/50"
+                  size="sm"
+                >
+                  Edit SQL
+                </Button>
+              )}
               <Button 
                 onClick={handleExecute}
                 isLoading={isExecuting}
-                className="gap-2 bg-success hover:bg-success/90 text-white"
+                className="gap-2 shadow-sm"
+                size="sm"
               >
-                {!isExecuting && <Play className="w-4 h-4 fill-current" />}
-                Execute Query
+                {!isExecuting && <Play className="w-3.5 h-3.5 fill-current" />}
+                Execute
               </Button>
             </div>
           </CardContent>

@@ -1,21 +1,22 @@
 import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import cloudinary from '../config/cloudinary';
 import path from 'path';
 import { AppError } from '../utils/AppError';
 
-import fs from 'fs';
-
-const uploadDir = process.env.UPLOAD_DIRECTORY || 'uploads/';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req: any, file: Express.Multer.File) => {
+    let baseName = req.body.name ? req.body.name : path.parse(file.originalname).name;
+    baseName = baseName.replace(/[^a-zA-Z0-9]/g, '_');
+    const shortSuffix = Math.floor(1000 + Math.random() * 9000);
+    
+    return {
+      folder: 'sql_analyzer_csvs',
+      resource_type: 'raw',
+      format: 'csv',
+      public_id: `${baseName}_${shortSuffix}`,
+    };
   },
 });
 
@@ -34,3 +35,4 @@ export const upload = multer({
   },
   fileFilter,
 });
+

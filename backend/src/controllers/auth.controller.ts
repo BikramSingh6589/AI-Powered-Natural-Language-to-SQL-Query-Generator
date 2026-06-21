@@ -62,6 +62,22 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
 import { AuthRequest } from '../middlewares/auth.middleware';
 
+export const checkEmail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      throw new AppError('Email is required', 400);
+    }
+    const user = await prisma.user.findUnique({ where: { email: String(email) } });
+    
+    res.status(200).json(ApiResponse.success('Email check complete', {
+      isRegistered: !!user
+    }));
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const me = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     // req.user is set by auth middleware
