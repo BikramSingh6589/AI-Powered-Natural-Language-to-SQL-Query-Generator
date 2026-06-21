@@ -12,6 +12,7 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
 import { api } from '../services/api';
+import { useRotatingBorder } from '../hooks/useRotatingBorder';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -28,6 +29,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export const Register: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const cardRef = useRotatingBorder();
 
   const {
     register,
@@ -65,7 +67,7 @@ export const Register: React.FC = () => {
 
   return (
     <div className="w-full h-screen flex items-center justify-center overflow-hidden">
-    <div className="w-[90%] h-[90%] flex flex-col lg:flex-row-reverse bg-card rounded-3xl overflow-hidden border border-border/50 shadow-2xl relative">
+    <div ref={cardRef} className="w-[90%] h-[90%] flex flex-col lg:flex-row-reverse rotating-border-card rounded-3xl overflow-hidden shadow-2xl relative">
       
       {/* Right Side - Form (Reversed to match Login's flow visually or just keep it on the left) */}
       {/* Actually, let's keep it on the left so it matches Login perfectly */}

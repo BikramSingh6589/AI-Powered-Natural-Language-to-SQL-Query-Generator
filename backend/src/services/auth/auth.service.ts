@@ -33,17 +33,15 @@ export const registerUser = async (name: string, email: string, passwordHash: st
   });
 
   return { user, otp };
-};
-
-export const loginUser = async (email: string, passwordHashAttempt: string) => {
+};export const loginUser = async (email: string, passwordHashAttempt: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    throw new AppError('Invalid email or password', 401);
+    throw new AppError('User not registered', 404);
   }
 
   const isValid = await bcrypt.compare(passwordHashAttempt, user.passwordHash);
   if (!isValid) {
-    throw new AppError('Invalid email or password', 401);
+    throw new AppError('Incorrect password', 401);
   }
 
   return user;
@@ -52,7 +50,7 @@ export const loginUser = async (email: string, passwordHashAttempt: string) => {
 export const verifyOtp = async (email: string, code: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    throw new AppError('User not found', 404);
+    throw new AppError('User not registered', 404);
   }
 
   const otpRecord = await prisma.oTP.findFirst({
@@ -81,6 +79,60 @@ export const verifyOtp = async (email: string, code: string) => {
   return user;
 };
 
+export const generateForgotPasswordOtp = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new AppError('User not registered', 404);
+  }
+
+  const otp = generateOTP();
+  await prisma.oTP.create({
+    data: {
+      userId: user.id,
+      code: otp,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes expiry
+    },
+  });
+
+  return { user, otp };
+};
+
+export const resetPasswordWithOtp = async (email: string, code: string, newPasswordHash: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new AppError('User not registered', 404);
+  }
+
+  const otpRecord = await prisma.oTP.findFirst({
+    where: {
+      userId: user.id,
+      code,
+      isUsed: false,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  if (!otpRecord) {
+    throw new AppError('Invalid or expired OTP', 400);
+  }
+
+  await prisma.oTP.update({
+    where: { id: otpRecord.id },
+    data: { isUsed: true },
+  });
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: newPasswordHash },
+  });
+
+  return user;
+};
 export const generateTokens = async (user: { id: string; role: string }) => {
   const accessToken = jwt.sign(
     { id: user.id, role: user.role },

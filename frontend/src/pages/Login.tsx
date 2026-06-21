@@ -12,6 +12,7 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
 import { api } from '../services/api';
+import { useRotatingBorder } from '../hooks/useRotatingBorder';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -25,10 +26,12 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from?.pathname || '/dashboard';
+  const cardRef = useRotatingBorder();
 
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -42,7 +45,14 @@ export const Login: React.FC = () => {
       toast.success('Welcome back!');
       navigate(from, { replace: true });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Invalid email or password');
+      const message = error.response?.data?.message || 'Invalid email or password';
+      if (message.toLowerCase().includes('user not registered')) {
+        setError('email', { type: 'manual', message: 'User not registered' });
+      } else if (message.toLowerCase().includes('password')) {
+        setError('password', { type: 'manual', message: 'Incorrect password' });
+      } else {
+        toast.error(message);
+      }
     }
   };
 
@@ -67,7 +77,7 @@ export const Login: React.FC = () => {
 
   return (
     <div className="w-full h-screen flex items-center justify-center overflow-hidden">
-    <div className="w-[95%] h-[95%] flex flex-col lg:flex-row bg-card rounded-3xl overflow-hidden border border-border/50 shadow-2xl relative">
+    <div ref={cardRef} className="w-[95%] h-[95%] flex flex-col lg:flex-row rotating-border-card rounded-3xl overflow-hidden shadow-2xl relative">
       
       {/* Left Side - Form */}
       <div className="flex-1 flex flex-col justify-center px-8 sm:px-16 py-12 lg:max-w-xl relative z-10 bg-background/50 backdrop-blur-md">

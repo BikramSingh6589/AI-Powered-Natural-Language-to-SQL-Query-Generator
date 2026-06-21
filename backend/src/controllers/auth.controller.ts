@@ -1,8 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
-import { registerUser, loginUser, verifyOtp, generateTokens } from '../services/auth/auth.service';
+import crypto from 'crypto';
+import { 
+  registerUser, 
+  loginUser, 
+  verifyOtp, 
+  generateTokens, 
+  generateForgotPasswordOtp, 
+  resetPasswordWithOtp 
+} from '../services/auth/auth.service';
 import { ApiResponse } from '../utils/ApiResponse';
-
 import { sendOtpEmail } from '../services/auth/email.service';
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -131,6 +138,40 @@ export const googleLogin = async (req: Request, res: Response, next: NextFunctio
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
       tokens
     }));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    const { user, otp } = await generateForgotPasswordOtp(email);
+
+    console.log(`[DEV ONLY] Forgot Password OTP for ${email} is ${otp}`);
+
+    try {
+      await sendOtpEmail(email, otp);
+    } catch (emailError) {
+      console.warn("Could not send email, but OTP was generated.", emailError);
+    }
+
+    res.status(200).json(ApiResponse.success('OTP sent for resetting password.'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, otp, password } = req.body;
+    
+    // Hash new password
+    const passwordHash = await bcrypt.hash(password, parseInt(process.env.BCRYPT_SALT_ROUNDS || '10'));
+    
+    await resetPasswordWithOtp(email, otp, passwordHash);
+
+    res.status(200).json(ApiResponse.success('Password reset successful.'));
   } catch (error) {
     next(error);
   }

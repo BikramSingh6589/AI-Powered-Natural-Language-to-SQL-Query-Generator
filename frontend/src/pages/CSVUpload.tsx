@@ -30,7 +30,7 @@ export const CSVUpload: React.FC = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const droppedFile = e.dataTransfer.files[0];
       validateAndSetFile(droppedFile);
@@ -48,7 +48,7 @@ export const CSVUpload: React.FC = () => {
       toast.error('Please upload a valid CSV file');
       return;
     }
-    
+
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
       toast.error('File size must be less than 10MB');
       return;
@@ -77,18 +77,18 @@ export const CSVUpload: React.FC = () => {
           setUploadProgress(percentCompleted);
         },
       });
-      
+
       const newDataset = {
         id: response.data.data.dataset.id,
         name: response.data.data.dataset.name,
         rowCount: response.data.data.dataset.rowCount,
         columns: response.data.data.dataset.columns.map((col: string) => ({ name: col, type: 'string' })),
       };
-      
+
       setDataset(newDataset);
       toast.success('Dataset uploaded successfully!');
       navigate('/query');
-      
+
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to upload dataset');
     } finally {
@@ -105,14 +105,13 @@ export const CSVUpload: React.FC = () => {
       </div>
 
       <Card className="border-border/60 shadow-xl overflow-hidden bg-gradient-to-b from-card to-background">
-        <CardContent className="p-8">
+        <CardContent className="p-8 pt-8">
           {!file ? (
             <div
-              className={`border-2 border-dashed rounded-3xl flex flex-col items-center justify-center min-h-[340px] transition-all duration-300 relative group ${
-                isDragging 
-                  ? 'border-primary bg-primary/10 shadow-[inset_0_0_50px_rgba(var(--primary-rgb),0.1)]' 
-                  : 'border-border/80 hover:border-primary/50 hover:bg-muted/30 cursor-pointer'
-              }`}
+              className={`border-2 border-dashed rounded-3xl flex flex-col items-center justify-center py-14 transition-all duration-300 relative group ${isDragging
+                ? 'border-primary bg-primary/10 shadow-[inset_0_0_50px_rgba(var(--primary-rgb),0.1)]'
+                : 'border-border/80 hover:border-primary/50 hover:bg-muted/30 cursor-pointer'
+                }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -123,16 +122,16 @@ export const CSVUpload: React.FC = () => {
                 <UploadCloud className="w-10 h-10 group-hover:animate-bounce-slow" />
               </div>
               <h3 className="text-2xl font-bold text-text-primary mb-3 relative z-10">Upload your CSV</h3>
-              <p className="text-sm font-medium text-text-secondary mb-10 relative z-10">Drag and drop or click to browse (max 10MB)</p>
-              
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileInput} 
-                accept=".csv" 
-                className="hidden" 
+              <p className="text-sm font-medium text-text-secondary mb-8 relative z-10">Drag and drop or click to browse (max 10MB)</p>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileInput}
+                accept=".csv"
+                className="hidden"
               />
-              <Button 
+              <Button
                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
                 className="rounded-xl px-10 py-6 text-base shadow-lg shadow-primary/20 relative z-10 hover:-translate-y-0.5 transition-transform"
               >

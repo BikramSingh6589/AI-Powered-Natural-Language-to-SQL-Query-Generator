@@ -6,46 +6,81 @@ import { motion } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-
 export const LandingPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const themeButtonRef = React.useRef<HTMLButtonElement>(null);
 
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+  const handleToggleTheme = () => {
+    if (themeButtonRef.current) {
+      const rect = themeButtonRef.current.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      toggleTheme({ x, y });
+    } else {
+      toggleTheme();
+    }
+  };
+
+  const isDark = theme === 'dark';
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-
       {/* ── Navbar ── */}
       <nav
-        className="sticky top-0 z-50 border-b backdrop-blur-md"
+        className="sticky top-0 z-50 border-b backdrop-blur-md shadow-sm transition-all"
         style={{ backgroundColor: 'color-mix(in srgb, var(--card) 85%, transparent)', borderColor: 'var(--border)' }}
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 font-bold text-xl text-primary no-underline">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2.5 font-bold text-xl text-primary no-underline hover:opacity-90 transition-opacity">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
               <Database className="w-4 h-4 text-white" />
             </div>
             SQL Analyzer
           </Link>
 
           {/* Right side — auth-aware */}
-          <div className="flex items-center gap-3">
-            {/* Theme toggle */}
+          <div className="flex items-center gap-4">
+            {/* Premium pill theme toggle */}
             <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
-              style={{ color: 'var(--text-secondary)' }}
-              title="Toggle theme"
+              ref={themeButtonRef}
+              onClick={handleToggleTheme}
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="relative flex items-center w-[72px] h-9 rounded-full border transition-all duration-300 overflow-hidden group flex-shrink-0"
+              style={{
+                backgroundColor: isDark ? 'var(--bg)' : '#f0f0f0',
+                borderColor: 'var(--border)',
+              }}
+              aria-label="Toggle theme"
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {/* Track icons */}
+              <span className="absolute left-2.5 flex items-center justify-center w-4 h-4 text-yellow-400 opacity-100 transition-all duration-300" style={{ opacity: isDark ? 0.5 : 1 }}>
+                <Sun className="w-3.5 h-3.5" />
+              </span>
+              <span className="absolute right-2.5 flex items-center justify-center w-4 h-4 text-indigo-400 transition-all duration-300" style={{ opacity: isDark ? 1 : 0.5 }}>
+                <Moon className="w-3.5 h-3.5" />
+              </span>
+              {/* Sliding knob */}
+              <span
+                className="absolute top-1 w-7 h-7 rounded-full shadow-md flex items-center justify-center transition-all duration-300 ease-in-out"
+                style={{
+                  left: isDark ? 'calc(100% - 32px)' : '4px',
+                  backgroundColor: isDark ? '#4F46E5' : '#FFFFFF',
+                  boxShadow: isDark
+                    ? '0 2px 8px rgba(79,70,229,0.5)'
+                    : '0 2px 8px rgba(0,0,0,0.15)',
+                }}
+              >
+                {isDark
+                  ? <Moon className="w-3.5 h-3.5 text-white" />
+                  : <Sun className="w-3.5 h-3.5 text-yellow-500" />
+                }
+              </span>
             </button>
 
             {isAuthenticated ? (
-              /* ── Logged-in state ── */
               <>
                 <Link
                   to="/dashboard"

@@ -2,13 +2,14 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
+import { api } from '../services/api';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -17,6 +18,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export const ForgotPassword: React.FC = () => {
+  const navigate = useNavigate();
   const [isSubmitted, setIsSubmitted] = React.useState(false);
 
   const {
@@ -29,12 +31,16 @@ export const ForgotPassword: React.FC = () => {
 
   const onSubmit = async (data: ForgotPasswordValues) => {
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await api.post('/auth/forgot-password', { email: data.email });
       setIsSubmitted(true);
-      toast.success('Password reset link sent!');
-    } catch (error) {
-      toast.error('Failed to send reset link. Please try again.');
+      toast.success('OTP sent to your email! Please check your inbox.');
+      
+      // Delay navigation slightly so they can see the success toast / state
+      setTimeout(() => {
+        navigate('/reset-password', { state: { email: data.email } });
+      }, 1500);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to send reset code. Please try again.');
     }
   };
 

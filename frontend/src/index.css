@@ -86,4 +86,14 @@ html.dark {
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  .rotating-border-card {
+    --rotation: 2.5rad;
+    border: 1.5px solid transparent !important;
+    background-image: 
+      linear-gradient(var(--card), var(--card)), 
+      linear-gradient(calc(var(--rotation)), #4F46E5 0%, #06B6D4 40%, transparent 80%) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+  }
 }

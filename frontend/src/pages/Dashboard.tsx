@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, FileSpreadsheet, Terminal, Activity, Loader2 } from 'lucide-react';
+import { Database, FileSpreadsheet, Terminal, Activity, Loader2, ArrowUpRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -138,35 +138,76 @@ export const Dashboard: React.FC = () => {
         </Card>
 
         <Card className="col-span-3">
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <Link to="/upload" className="flex items-center gap-4 p-4 rounded-2xl border border-border/50 bg-background/50 hover:bg-primary/5 hover:border-primary/30 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform">
-                <FileSpreadsheet className="w-6 h-6" />
+          <CardContent className="flex flex-col gap-3">
+            <Link 
+              to="/upload" 
+              className="flex flex-col p-4 rounded-2xl border border-border/40 bg-card/45 hover:bg-card hover:border-primary/40 hover:shadow-[0_8px_30px_rgb(79,70,229,0.12)] hover:-translate-y-0.5 transition-all duration-300 group relative overflow-hidden"
+            >
+              {/* Top Row: Icon and Title */}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-105 transition-transform duration-300">
+                  <FileSpreadsheet className="w-4.5 h-4.5" />
+                </div>
+                <span className="font-bold text-text-primary text-sm tracking-wide group-hover:text-primary transition-colors duration-300">Upload new dataset</span>
               </div>
-              <div>
-                <p className="text-sm font-bold text-text-primary">Upload new dataset</p>
-                <p className="text-xs text-text-secondary mt-0.5 font-medium">Add CSV files to your database</p>
+              
+              {/* Description with proper gap */}
+              <p className="text-xs text-text-secondary font-medium mt-2.5 leading-relaxed max-w-[82%]">
+                Add CSV files to your database
+              </p>
+
+              {/* Action Arrow (positioned absolutely) */}
+              <div className="absolute bottom-3.5 right-3.5 w-7 h-7 rounded-full bg-background/50 border border-border/40 text-text-secondary group-hover:bg-primary group-hover:text-white group-hover:border-transparent flex items-center justify-center transition-all duration-300">
+                <ArrowUpRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
               </div>
             </Link>
-            <Link to="/query" className="flex items-center gap-4 p-4 rounded-2xl border border-border/50 bg-background/50 hover:bg-warning/5 hover:border-warning/30 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
-              <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center text-warning border border-warning/20 group-hover:scale-110 transition-transform">
-                <Terminal className="w-6 h-6" />
+
+            <Link 
+              to="/query" 
+              className="flex flex-col p-4 rounded-2xl border border-border/40 bg-card/45 hover:bg-card hover:border-warning/40 hover:shadow-[0_8px_30px_rgb(245,158,11,0.12)] hover:-translate-y-0.5 transition-all duration-300 group relative overflow-hidden"
+            >
+              {/* Top Row: Icon and Title */}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-warning/10 flex items-center justify-center text-warning border border-warning/20 group-hover:scale-105 transition-transform duration-300">
+                  <Terminal className="w-4.5 h-4.5" />
+                </div>
+                <span className="font-bold text-text-primary text-sm tracking-wide group-hover:text-warning transition-colors duration-300">Start querying</span>
               </div>
-              <div>
-                <p className="text-sm font-bold text-text-primary">Start querying</p>
-                <p className="text-xs text-text-secondary mt-0.5 font-medium">Generate SQL from natural language</p>
+              
+              {/* Description with proper gap */}
+              <p className="text-xs text-text-secondary font-medium mt-2.5 leading-relaxed max-w-[82%]">
+                Generate SQL from natural language
+              </p>
+
+              {/* Action Arrow (positioned absolutely) */}
+              <div className="absolute bottom-3.5 right-3.5 w-7 h-7 rounded-full bg-background/50 border border-border/40 text-text-secondary group-hover:bg-warning group-hover:text-white group-hover:border-transparent flex items-center justify-center transition-all duration-300">
+                <ArrowUpRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
               </div>
             </Link>
-            <Link to="/history" className="flex items-center gap-4 p-4 rounded-2xl border border-border/50 bg-background/50 hover:bg-secondary/5 hover:border-secondary/30 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
-              <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/20 group-hover:scale-110 transition-transform">
-                <Activity className="w-6 h-6" />
+
+            <Link 
+              to="/history" 
+              className="flex flex-col p-4 rounded-2xl border border-border/40 bg-card/45 hover:bg-card hover:border-secondary/40 hover:shadow-[0_8px_30px_rgb(6,182,212,0.12)] hover:-translate-y-0.5 transition-all duration-300 group relative overflow-hidden"
+            >
+              {/* Top Row: Icon and Title */}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/20 group-hover:scale-105 transition-transform duration-300">
+                  <Activity className="w-4.5 h-4.5" />
+                </div>
+                <span className="font-bold text-text-primary text-sm tracking-wide group-hover:text-secondary transition-colors duration-300">View query history</span>
               </div>
-              <div>
-                <p className="text-sm font-bold text-text-primary">View query history</p>
-                <p className="text-xs text-text-secondary mt-0.5 font-medium">Access your past executions</p>
+              
+              {/* Description with proper gap */}
+              <p className="text-xs text-text-secondary font-medium mt-2.5 leading-relaxed max-w-[82%]">
+                Access your past executions
+              </p>
+
+              {/* Action Arrow (positioned absolutely) */}
+              <div className="absolute bottom-3.5 right-3.5 w-7 h-7 rounded-full bg-background/50 border border-border/40 text-text-secondary group-hover:bg-secondary group-hover:text-white group-hover:border-transparent flex items-center justify-center transition-all duration-300">
+                <ArrowUpRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
               </div>
             </Link>
           </CardContent>
