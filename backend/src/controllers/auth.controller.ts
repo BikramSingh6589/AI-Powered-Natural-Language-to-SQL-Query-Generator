@@ -19,14 +19,10 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     
     const { user, otp } = await registerUser(name, email, passwordHash);
 
-    // Send this via email using Nodemailer
-    // We also log it to terminal just in case
-    console.log(`[DEV ONLY] OTP for ${email} is ${otp}`);
-    
     try {
       await sendOtpEmail(email, otp);
     } catch (emailError) {
-      console.warn("Could not send email, but user was created.", emailError);
+      // Could not send email, but user was created
     }
 
     res.status(201).json(ApiResponse.success('User registered successfully. OTP sent.', { userId: user.id }));
@@ -148,12 +144,10 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
     const { email } = req.body;
     const { user, otp } = await generateForgotPasswordOtp(email);
 
-    console.log(`[DEV ONLY] Forgot Password OTP for ${email} is ${otp}`);
-
     try {
       await sendOtpEmail(email, otp);
     } catch (emailError) {
-      console.warn("Could not send email, but OTP was generated.", emailError);
+      // Could not send email, but OTP was generated
     }
 
     res.status(200).json(ApiResponse.success('OTP sent for resetting password.'));

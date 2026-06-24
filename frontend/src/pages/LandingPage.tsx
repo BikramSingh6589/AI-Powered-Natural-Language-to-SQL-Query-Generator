@@ -276,10 +276,74 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* ── Contact Us Section ── */}
+      <section id="contact" className="py-24" style={{ backgroundColor: 'var(--bg)' }}>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+              Contact Us
+            </h2>
+            <p className="max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+              Have questions? We'd love to hear from you! Send us a message and we'll get back to you as soon as possible.
+            </p>
+          </div>
+
+          <div className="max-w-2xl mx-auto">
+            <div className="p-8 rounded-3xl border shadow-lg" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Name</label>
+                    <input 
+                      type="text" 
+                      className="w-full px-4 py-3 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      style={{ borderColor: 'var(--border)' }}
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Email</label>
+                    <input 
+                      type="email" 
+                      className="w-full px-4 py-3 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      style={{ borderColor: 'var(--border)' }}
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Subject</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-3 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    style={{ borderColor: 'var(--border)' }}
+                    placeholder="How can we help you?"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Message</label>
+                  <textarea 
+                    className="w-full px-4 py-3 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[150px]"
+                    style={{ borderColor: 'var(--border)' }}
+                    placeholder="Your message here..."
+                  />
+                </div>
+
+                <Button className="w-full py-3 rounded-xl shadow-lg shadow-primary/25 hover:-translate-y-0.5 transition-transform">
+                  Send Message
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Footer ── */}
       <footer className="pt-20 pb-10 border-t bg-muted/20" style={{ borderColor: 'var(--border)' }}>
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
-          <div className="col-span-1 md:col-span-2 space-y-6">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 mb-16">
+          <div className="space-y-6">
             <div className="flex items-center gap-2.5 font-bold text-xl text-primary">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                 <Database className="w-4 h-4 text-white" />
@@ -287,42 +351,30 @@ export const LandingPage: React.FC = () => {
               SQL Analyzer
             </div>
             <p className="max-w-sm text-sm leading-relaxed opacity-80" style={{ color: 'var(--text-secondary)' }}>
-              Securing Your Digital World: Your Trusted Partner in Data Protection with Cutting Edge Solutions for Data Security.
+              AI-Powered Natural Language to SQL Query Generator.
             </p>
           </div>
           
           <div className="space-y-6">
-            <h4 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Resources</h4>
+            <h4 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Quick Links</h4>
             <ul className="space-y-4 text-sm opacity-80" style={{ color: 'var(--text-secondary)' }}>
-              <li><Link to="/" className="hover:text-primary transition-colors">Features</Link></li>
-              <li><Link to="/" className="hover:text-primary transition-colors">Pricing</Link></li>
-              <li><Link to="/" className="hover:text-primary transition-colors">Blog</Link></li>
+              <li><Link to="/" className="hover:text-primary transition-colors">Home</Link></li>
+              <li><Link to="#contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
+              <li><Link to="#" className="hover:text-primary transition-colors">About</Link></li>
             </ul>
           </div>
           
           <div className="space-y-6">
-            <h4 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Subscribe to Our Newsletter!</h4>
-            <p className="text-sm opacity-80 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-              Stay Informed with Our Latest Security Insights - Subscribe to Our Newsletter!
-            </p>
-            <div className="flex gap-2">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
-                className="flex-1 px-4 py-2.5 rounded-xl border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                style={{ borderColor: 'var(--border)' }}
-              />
-              <Button className="rounded-xl px-5 whitespace-nowrap shadow-sm shadow-primary/20">Subscribe</Button>
-            </div>
+            <h4 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Legal</h4>
+            <ul className="space-y-4 text-sm opacity-80" style={{ color: 'var(--text-secondary)' }}>
+              <li><Link to="/" className="hover:text-primary transition-colors">Terms of Service</Link></li>
+              <li><Link to="/" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+            </ul>
           </div>
         </div>
         
         <div className="max-w-7xl mx-auto px-6 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderColor: 'var(--border)' }}>
           <p className="text-sm opacity-60" style={{ color: 'var(--text-secondary)' }}>© 2026 SQL Analyzer. All rights reserved.</p>
-          <div className="flex gap-6 text-sm opacity-80" style={{ color: 'var(--text-secondary)' }}>
-            <Link to="/" className="hover:text-primary transition-colors">Terms</Link>
-            <Link to="/" className="hover:text-primary transition-colors">Privacy Policy</Link>
-          </div>
         </div>
       </footer>
     </div>

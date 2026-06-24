@@ -34,9 +34,7 @@ export const sendOtpEmail = async (to: string, otp: string) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`Email sent successfully to ${to}`);
   } catch (error) {
-    console.error('Error sending email:', error);
     // Even if email fails, we might want to just log it so the app doesn't crash, 
     // or we can throw to notify the user. Throwing might be better so they know.
     throw new Error('Could not send OTP email. Please check SMTP configuration.');

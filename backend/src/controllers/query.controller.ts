@@ -9,22 +9,42 @@ import { validateSql } from '../services/ai/sql-validator.service';
 
 export const generateQuery = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { datasetId, naturalQuery } = req.body;
+    const { datasetId, naturalQuery, tableName, schemaInfo } = req.body;
 
-    if (!datasetId || !naturalQuery) {
-      throw new AppError('datasetId and naturalQuery are required', 400);
+    if (!naturalQuery) {
+      throw new AppError('naturalQuery is required', 400);
     }
 
-    const dataset = await prisma.dataset.findUnique({
-      where: { id: datasetId }
-    });
+    let targetTableName: string;
+    let targetSchemaInfo: Record<string, string>;
+    let datasetName: string = 'Database Tables';
+    let targetDatasetId: string | null = null;
 
-    if (!dataset) {
-      throw new AppError('Dataset not found', 404);
+    if (datasetId) {
+      // Case 1: Using a dataset from CSV upload
+      const dataset = await prisma.dataset.findUnique({
+        where: { id: datasetId }
+      });
+
+      if (!dataset) {
+        throw new AppError('Dataset not found', 404);
+      }
+
+      targetTableName = dataset.tableName;
+      targetSchemaInfo = dataset.schemaInfo as Record<string, string>;
+      datasetName = dataset.name;
+      targetDatasetId = dataset.id;
+    } else if (tableName && schemaInfo) {
+      // Case 2: Using a direct database table
+      targetTableName = tableName;
+      targetSchemaInfo = schemaInfo;
+      datasetName = tableName;
+    } else {
+      throw new AppError('Either datasetId or tableName + schemaInfo are required', 400);
     }
 
     // 1. Build prompt
-    const { systemPrompt, userPrompt } = buildSqlPrompt(naturalQuery, dataset.tableName, dataset.schemaInfo as Record<string, string>);
+    const { systemPrompt, userPrompt } = buildSqlPrompt(naturalQuery, targetTableName, targetSchemaInfo);
 
     // 2. Call Groq to generate SQL
     let generatedSQL = await callGroq(systemPrompt, userPrompt);
@@ -36,14 +56,14 @@ export const generateQuery = async (req: AuthRequest, res: Response, next: NextF
     validateSql(generatedSQL);
 
     // 4. Call Groq for Explanation
-    const explanationPrompts = buildExplanationPrompt(generatedSQL, naturalQuery, dataset.name);
+    const explanationPrompts = buildExplanationPrompt(generatedSQL, naturalQuery, datasetName);
     const explanation = await callGroq(explanationPrompts.systemPrompt, explanationPrompts.userPrompt);
 
     // 5. Store in Query History
     const queryHistory = await prisma.queryHistory.create({
       data: {
         userId: req.user!.id,
-        datasetId: dataset.id,
+        datasetId: targetDatasetId,
         naturalQuery,
         generatedSQL,
         explanation,

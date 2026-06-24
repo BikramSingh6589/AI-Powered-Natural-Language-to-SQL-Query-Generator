@@ -88,26 +88,26 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, i) => (
           <Card key={stat.title} className="relative overflow-hidden group hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border-border/50 bg-card/40 backdrop-blur-sm">
             <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-br from-transparent to-${stat.color.split('-')[1]} transition-opacity duration-300`} />
             <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
-              <CardTitle className="text-sm font-semibold tracking-wide text-text-secondary uppercase">
+              <CardTitle className="text-xs sm:text-sm font-semibold tracking-wide text-text-secondary uppercase">
                 {stat.title}
               </CardTitle>
-              <div className={`w-10 h-10 rounded-xl ${stat.bg} border border-${stat.color.split('-')[1]}/20 flex items-center justify-center shadow-sm`}>
-                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+              <div className={`w-8 sm:w-10 h-8 sm:h-10 rounded-xl ${stat.bg} border border-${stat.color.split('-')[1]}/20 flex items-center justify-center shadow-sm`}>
+                <stat.icon className={`w-4 sm:w-5 h-4 sm:h-5 ${stat.color}`} />
               </div>
             </CardHeader>
             <CardContent className="relative z-10">
-              <div className="text-3xl font-bold text-text-primary tracking-tight">{stat.value}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">{stat.value}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-1 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
@@ -118,12 +118,12 @@ export const Dashboard: React.FC = () => {
             ) : (
               <div className="space-y-2">
                 {stats?.recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-background/30 hover:bg-muted/40 hover:border-border transition-all duration-200 group">
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-sm font-semibold text-text-primary group-hover:text-primary transition-colors truncate max-w-[280px] sm:max-w-md">{activity.action}</span>
+                  <div key={activity.id} className="flex items-center justify-between p-3 sm:p-4 rounded-2xl border border-border/40 bg-background/30 hover:bg-muted/40 hover:border-border transition-all duration-200 group">
+                    <div className="flex flex-col gap-1.5 flex-1 min-w-0 mr-3">
+                      <span className="text-sm font-semibold text-text-primary group-hover:text-primary transition-colors truncate">{activity.action}</span>
                       <span className="text-[11px] font-medium text-text-secondary tracking-wide">{activity.time}</span>
                     </div>
-                    <div className={`text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest border shadow-sm ${
+                    <div className={`text-[10px] font-bold px-2.5 py-1.5 rounded-full uppercase tracking-widest border shadow-sm flex-shrink-0 ${
                       activity.status === 'SUCCESS' 
                         ? 'bg-success/10 text-success border-success/20' 
                         : 'bg-error/10 text-error border-error/20'

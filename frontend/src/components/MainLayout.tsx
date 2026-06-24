@@ -232,10 +232,10 @@ export const MainLayout: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Top Navbar */}
         <header
-          className="h-16 flex items-center justify-between px-6 border-b flex-shrink-0 gap-4"
+          className="h-16 flex items-center justify-between px-4 sm:px-6 border-b flex-shrink-0 gap-4"
           style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
         >
-          <div className="flex items-center gap-3 flex-1 max-w-md">
+          <div className="flex items-center gap-3 flex-1">
             {/* Mobile Hamburger Button */}
             {isMobile && (
               <button
@@ -252,19 +252,22 @@ export const MainLayout: React.FC = () => {
               </button>
             )}
 
-            <div
-              className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-sm flex-1 cursor-text hover:border-primary/40 transition-colors"
-              style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
-            >
-              <div className="flex items-center gap-2">
-                <Search className="w-4 h-4 flex-shrink-0" />
-                <span>Search queries, datasets...</span>
+            {/* Search Component — Only show on desktop/tablet */}
+            {!isMobile && (
+              <div
+                className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-sm flex-1 max-w-md cursor-text hover:border-primary/40 transition-colors"
+                style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+              >
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 flex-shrink-0" />
+                  <span>Search queries, datasets...</span>
+                </div>
+                <div className="hidden sm:flex items-center gap-1 opacity-60">
+                  <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-border bg-card text-[10px] font-medium font-sans">Ctrl</kbd>
+                  <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-border bg-card text-[10px] font-medium font-sans">K</kbd>
+                </div>
               </div>
-              <div className="hidden sm:flex items-center gap-1 opacity-60">
-                <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-border bg-card text-[10px] font-medium font-sans">Ctrl</kbd>
-                <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-border bg-card text-[10px] font-medium font-sans">K</kbd>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2 ml-4">
@@ -323,7 +326,7 @@ export const MainLayout: React.FC = () => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto p-6" style={{ backgroundColor: 'var(--bg)' }}>
+        <main className="flex-1 overflow-auto p-4 sm:p-6" style={{ backgroundColor: 'var(--bg)' }}>
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, y: 8 }}

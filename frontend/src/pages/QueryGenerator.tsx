@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Sparkles, Copy, Check, FileCode2, History, MessageSquare, Loader2, Database } from 'lucide-react';
+import { Play, Sparkles, Copy, Check, FileCode2, History, MessageSquare, Loader2, Database, Table } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,6 +10,11 @@ import { useQuery } from '../context/QueryContext';
 import { useDataset, Dataset } from '../context/DatasetContext';
 import { api } from '../services/api';
 
+interface DatabaseTable {
+  name: string;
+  schemaInfo: Record<string, string>;
+}
+
 export const QueryGenerator: React.FC = () => {
   const { naturalQuery, setNaturalQuery, generatedSql, setGeneratedSql, explanation, setExplanation, setQueryResult, historyId, setHistoryId } = useQuery();
   const [isGenerating, setIsGenerating] = useState(false);
@@ -17,8 +22,11 @@ export const QueryGenerator: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const { dataset, setSelectedDataset, datasets, addDataset } = useDataset();
   const [availableDatasets, setAvailableDatasets] = useState<Dataset[]>([]);
+  const [databaseTables, setDatabaseTables] = useState<DatabaseTable[]>([]);
+  const [selectedTable, setSelectedTable] = useState<DatabaseTable | null>(null);
   const [dbConnected, setDbConnected] = useState(false);
   const [isEditingSql, setIsEditingSql] = useState(false);
+  const [selectionType, setSelectionType] = useState<'dataset' | 'table'>('table');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,21 +34,26 @@ export const QueryGenerator: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const fetchDatasets = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/csv/datasets');
-        const fetchedDatasets = response.data.data.datasets;
+        // Fetch CSV datasets
+        const datasetsResponse = await api.get('/csv/datasets');
+        const fetchedDatasets = datasetsResponse.data.data.datasets;
         setAvailableDatasets(fetchedDatasets);
         
-        // If we have datasets but none selected, select the first one
-        if (fetchedDatasets.length > 0 && !dataset) {
-          setSelectedDataset(fetchedDatasets[0]);
+        // Fetch database tables
+        try {
+          const tablesResponse = await api.get('/database/tables');
+          const tables = tablesResponse.data.data.tables;
+          setDatabaseTables(tables);
+        } catch (tableError) {
+          // Failed to load database tables
         }
       } catch (error) {
-        console.error('Failed to load datasets', error);
+        // Failed to load data
       }
     };
-    fetchDatasets();
+    fetchData();
   }, []);
 
   const handleGenerate = async () => {
@@ -49,17 +62,23 @@ export const QueryGenerator: React.FC = () => {
       return;
     }
 
-    if (!dataset?.id) {
+    if (selectionType === 'dataset' && !dataset?.id) {
       toast.error('Please select a dataset first');
+      return;
+    }
+
+    if (selectionType === 'table' && !selectedTable) {
+      toast.error('Please select a table first');
       return;
     }
 
     setIsGenerating(true);
     try {
-      const response = await api.post('/query/generate', {
-        datasetId: dataset.id,
-        naturalQuery
-      });
+      const requestBody = selectionType === 'dataset' 
+        ? { datasetId: dataset.id, naturalQuery }
+        : { tableName: selectedTable!.name, schemaInfo: selectedTable!.schemaInfo, naturalQuery };
+      
+      const response = await api.post('/query/generate', requestBody);
       
       const { sql, explanation, historyId: newHistoryId } = response.data.data;
       
@@ -123,22 +142,80 @@ export const QueryGenerator: React.FC = () => {
           </h2>
           <p className="text-text-secondary mt-1">Translate your natural language questions into executable SQL queries.</p>
         </div>
-        
-        <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2 shadow-sm">
-          <Database className="w-4 h-4 text-secondary" />
-          <select 
-            value={dataset?.id || ''} 
-            onChange={(e) => {
-              const selected = availableDatasets.find(d => d.id === e.target.value);
-              if (selected) setSelectedDataset(selected);
-            }}
-            className="bg-transparent border-none text-sm font-medium text-text-primary focus:outline-none focus:ring-0 cursor-pointer min-w-[150px]"
-          >
-            <option value="" disabled>Select Dataset</option>
-            {availableDatasets.map(d => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
+      </div>
+
+      {/* Selection Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Database Tables */}
+        <div className={`p-4 rounded-2xl border-2 transition-all ${selectionType === 'table' ? 'border-primary/50 bg-primary/5' : 'border-border bg-card/50'}`}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+              <Table className="w-4 h-4 text-primary" />
+              Database Tables
+            </h3>
+            <Button 
+              variant={selectionType === 'table' ? 'default' : 'ghost'} 
+              size="sm"
+              onClick={() => setSelectionType('table')}
+              className="text-xs"
+            >
+              {selectionType === 'table' ? 'Selected' : 'Select'}
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Database className="w-4 h-4 text-secondary" />
+            <select 
+              disabled={selectionType !== 'table'}
+              value={selectedTable?.name || ''} 
+              onChange={(e) => {
+                const selected = databaseTables.find(d => d.name === e.target.value);
+                if (selected) setSelectedTable(selected);
+              }}
+              className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              <option value="" disabled style={{ color: 'var(--text-secondary)' }}>Select Table</option>
+              {databaseTables.map(t => (
+                <option key={t.name} value={t.name} style={{ color: 'var(--text-primary)', backgroundColor: 'var(--background)' }}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* CSV Datasets */}
+        <div className={`p-4 rounded-2xl border-2 transition-all ${selectionType === 'dataset' ? 'border-primary/50 bg-primary/5' : 'border-border bg-card/50'}`}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+              <Database className="w-4 h-4 text-secondary" />
+              CSV Datasets
+            </h3>
+            <Button 
+              variant={selectionType === 'dataset' ? 'default' : 'ghost'} 
+              size="sm"
+              onClick={() => setSelectionType('dataset')}
+              className="text-xs"
+            >
+              {selectionType === 'dataset' ? 'Selected' : 'Select'}
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Database className="w-4 h-4 text-secondary" />
+            <select 
+              disabled={selectionType !== 'dataset'}
+              value={dataset?.id || ''} 
+              onChange={(e) => {
+                const selected = availableDatasets.find(d => d.id === e.target.value);
+                if (selected) setSelectedDataset(selected);
+              }}
+              className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              <option value="" disabled style={{ color: 'var(--text-secondary)' }}>Select Dataset</option>
+              {availableDatasets.map(d => (
+                <option key={d.id} value={d.id} style={{ color: 'var(--text-primary)', backgroundColor: 'var(--background)' }}>{d.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -147,7 +224,7 @@ export const QueryGenerator: React.FC = () => {
         <CardContent className="pt-6">
           <div className="relative">
             <Textarea
-              placeholder="Ask anything about your data... (e.g., 'Show me the top 5 customers by revenue this year')"
+              placeholder="Ask anything about your data... (e.g., 'Show me all users' or 'Show me the top 5 customers by revenue this year')"
               value={naturalQuery}
               onChange={(e) => setNaturalQuery(e.target.value)}
               className="min-h-[140px] text-base resize-none pb-16"

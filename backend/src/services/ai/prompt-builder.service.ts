@@ -13,7 +13,8 @@ ${schemaDescription}
 IMPORTANT RULES:
 1. Map the user's terms to the closest matching schema columns. Be lenient. If they ask for "region", use "region_id" if that's the closest column.
 2. Use standard PostgreSQL functions and syntax. For "top N", use "ORDER BY ... LIMIT N".
-3. ONLY if the query is completely unrelated to the schema and impossible to answer, generate a safe fallback query like: SELECT 1 AS error_invalid_query;
+3. ALWAYS use double quotes around table names and column names that contain capital letters or are reserved words (like "User", "Dataset", "QueryHistory", "OTP", "RefreshToken").
+4. ONLY if the query is completely unrelated to the schema and impossible to answer, generate a safe fallback query like: SELECT 1 AS error_invalid_query;
 `;
 
   return { systemPrompt, userPrompt: naturalQuery };

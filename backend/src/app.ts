@@ -52,6 +52,8 @@ app.use('/api/v1/query', queryRoutes);
 app.use('/api/v1/history', queryRoutes);
 import exportRoutes from './routes/export.routes';
 app.use('/api/v1/export', exportRoutes);
+import databaseRoutes from './routes/database.routes';
+app.use('/api/v1/database', databaseRoutes);
 
 // Basic Route for health check
 app.get('/api/health', (req: Request, res: Response) => {
