@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sql-analyzer-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build && npx prisma generate
+    startCommand: npm start
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
