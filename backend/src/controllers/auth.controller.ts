@@ -150,7 +150,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       // Could not send email, but OTP was generated
     }
 
-    res.status(200).json(ApiResponse.success('OTP sent for resetting password.'));
+    res.status(200).json(ApiResponse.success('OTP sent for resetting password.', null));
   } catch (error) {
     next(error);
   }
@@ -165,7 +165,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     
     await resetPasswordWithOtp(email, otp, passwordHash);
 
-    res.status(200).json(ApiResponse.success('Password reset successful.'));
+    res.status(200).json(ApiResponse.success('Password reset successful.', null));
   } catch (error) {
     next(error);
   }
