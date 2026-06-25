@@ -75,7 +75,7 @@ export const QueryGenerator: React.FC = () => {
     setIsGenerating(true);
     try {
       const requestBody = selectionType === 'dataset' 
-        ? { datasetId: dataset.id, naturalQuery }
+        ? { datasetId: dataset!.id, naturalQuery }
         : { tableName: selectedTable!.name, schemaInfo: selectedTable!.schemaInfo, naturalQuery };
       
       const response = await api.post('/query/generate', requestBody);
